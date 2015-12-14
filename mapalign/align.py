@@ -7,9 +7,10 @@ def match_coords(C1, C2):
     idx = []
     idxlist = range(C2.shape[0])
     for pt1 in C1:
-        idxremain = np.setdiff1d(idxlist, idx)
-        idxmatch = np.argsort(np.sum((C2[idxremain, :] - pt1) * (C2[idxremain, :] - pt1), axis=1))[0]
-        idx.append(idxremain[idxmatch])
+	if not len(idx) > C1.shape[0] : 
+        	idxremain = np.setdiff1d(idxlist, idx)
+        	idxmatch = np.argsort(np.sum((C2[idxremain, :] - pt1) * (C2[idxremain, :] - pt1), axis=1))[0]
+        	idx.append(idxremain[idxmatch])
     #print idxremain
     return idx
 
@@ -105,7 +106,11 @@ def iterative_alignment_with_coords(embeddings, coords=None, n_iters=1, n_sample
         realigned = []
         xfms = []
         for i, embedding in enumerate(embeddings):
+	    print "match coords start", i
             idx = match_coords(targetcoords, basecoords[i])
+	    print "match coords end", i
+	    print "idx length: ", len(idx)
+	    print "targetcoords shape", np.shape(targetcoords) 
             W = get_weight_matrix(targetcoords, basecoords[i], idx)
             u, s, v = np.linalg.svd(target.T.dot(W.dot(embedding[idx, :])))
             xfms.append(v.T.dot(u.T))

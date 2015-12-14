@@ -118,16 +118,24 @@ def compute_diffusion_map(L, alpha=0.5, n_components=None, diffusion_time=0,
         lambdas = lambdas[1:] / (1 - lambdas[1:])
     else:
         lambdas = lambdas[1:] ** float(diffusion_time)
-    lambda_ratio = lambdas/lambdas[0]
-    threshold = max(0.05, lambda_ratio[-1])
 
-    n_components_auto = np.amax(np.nonzero(lambda_ratio > threshold)[0])
-    n_components_auto = min(n_components_auto, ndim)
+
     if n_components is None:
+        if lambdas[0] > 0:
+            lambda_ratio = lambdas/lambdas[0]
+            threshold = max(0.05, lambda_ratio[-1])
+            n_components_auto = np.amax(np.nonzero(lambda_ratio > threshold)[0])
+            if n_components_auto == 0:
+                n_components_auto = 1
+        else:
+            n_components_auto = 1
+        n_components_auto = min(n_components_auto, ndim)
         n_components = n_components_auto
+        print "n_components_auto: \n", n_components_auto
+
     embedding = psi[:, 1:(n_components + 1)] * lambdas[:n_components][None, :]
 
     result = dict(lambdas=lambdas, vectors=vectors,
-                  n_components=n_components, diffusion_time=diffusion_time,
-                  n_components_auto=n_components_auto)
+                  n_components=n_components, diffusion_time=diffusion_time)
+
     return embedding, result

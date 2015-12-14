@@ -62,6 +62,7 @@ def iterative_alignment_with_coords(embeddings, coords=None, n_iters=1, n_sample
     realigned = [target]
     # first pass
     for i, embedding in enumerate(embeddings[1:]):
+        print "first pass loop %d / %d :" % (i, np.shape(embeddings)[0])
         if targetcoords is not None:
             idx = match_coords(targetcoords, coords[i + 1])
             W = get_weight_matrix(targetcoords, coords[i + 1], idx)
@@ -105,12 +106,12 @@ def iterative_alignment_with_coords(embeddings, coords=None, n_iters=1, n_sample
                 basecoords.append(coords[i])
         realigned = []
         xfms = []
+        print "targetcoords shape", np.shape(targetcoords)        
         for i, embedding in enumerate(embeddings):
-	    print "match coords start", i
+            print "match coords start", i
             idx = match_coords(targetcoords, basecoords[i])
-	    print "match coords end", i
-	    print "idx length: ", len(idx)
-	    print "targetcoords shape", np.shape(targetcoords) 
+            print "match coords end", i
+            print "idx length: ", len(idx)             
             W = get_weight_matrix(targetcoords, basecoords[i], idx)
             u, s, v = np.linalg.svd(target.T.dot(W.dot(embedding[idx, :])))
             xfms.append(v.T.dot(u.T))

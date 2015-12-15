@@ -7,7 +7,7 @@ def match_coords(C1, C2):
     idx = []
     idxlist = range(C2.shape[0])
     for pt1 in C1:
-	if not len(idx) > C1.shape[0] : 
+	if len(idx) < C2.shape[0] : 
         	idxremain = np.setdiff1d(idxlist, idx)
         	idxmatch = np.argsort(np.sum((C2[idxremain, :] - pt1) * (C2[idxremain, :] - pt1), axis=1))[0]
         	idx.append(idxremain[idxmatch])
@@ -50,7 +50,7 @@ def iterative_alignment(embeddings, n_iters=1):
     return realigned, xfms
 
 
-def iterative_alignment_with_coords(embeddings, coords=None, n_iters=1, n_samples=0.1, use_mean=False):
+def iterative_alignment_with_coords(embeddings, coords=None, n_iters=1, n_samples=1, use_mean=False):
     target = embeddings[0]
     if coords is None:
         targetcoords = None
@@ -90,12 +90,12 @@ def iterative_alignment_with_coords(embeddings, coords=None, n_iters=1, n_sample
         else:
             for i, embedding in enumerate(realigned):
                 index.append(np.random.permutation(embedding.shape[0])[:int(n_samples*embedding.shape[0])])
-                target.extend(embedding[index[-1]].tolist())
+                target.append(embedding[index[-1]].tolist())
                 if coords is None:
-                    targetcoords.extend(dummycoords[index[-1]])
+                    targetcoords.append(dummycoords[index[-1]])
                     basecoords.append(dummycoords)
                 else:
-                    targetcoords.extend(coords[i][index[-1]])
+                    targetcoords.append(coords[i][index[-1]])
                     basecoords.append(coords[i])
         target = np.array(target)
         targetcoords = np.array(targetcoords)
@@ -109,11 +109,11 @@ def iterative_alignment_with_coords(embeddings, coords=None, n_iters=1, n_sample
         print "targetcoords shape", np.shape(targetcoords)        
         for i, embedding in enumerate(embeddings):
             print "match coords start", i
-            idx = match_coords(targetcoords, basecoords[i])
+            idx = match_coords(targetcoords[i], basecoords[i])
             print "match coords end", i
             print "idx length: ", len(idx)             
-            W = get_weight_matrix(targetcoords, basecoords[i], idx)
-            u, s, v = np.linalg.svd(target.T.dot(W.dot(embedding[idx, :])))
+            W = get_weight_matrix(targetcoords[i], basecoords[i], idx)
+            u, s, v = np.linalg.svd(target[i].T.dot(W.dot(embedding[idx, :])))
             xfms.append(v.T.dot(u.T))
             realigned.append(embedding.dot(xfms[-1]))
     return realigned, xfms
